@@ -22,35 +22,22 @@
 #
 ##############################################################################
 
-{
-    'name': 'MRP Maintenance',
-    'version': '1.0',
-    "category" : "Manufacturing",
-    'description': """Manage maintenance in production order""",
-    'author': 'SYLEAM',
-    'website': 'http://www.syleam.fr/',
-    'depends': [
-        'base',
-        'mrp',
-        'sale',
-        'stock',
-    ],
-    'init_xml': [],
-    'images': [],
-    'update_xml': [
-        #'security/groups.xml',
-        #'security/ir.model.access.csv',
-        'sale_view.xml',
-        'procurement_workflow.xml',
-        'mrp_view.xml',
-        #'wizard/wizard.xml',
-    ],
-    'demo_xml': [],
-    'test': [],
-    'installable': True,
-    'application': True,
-    'active': False,
-    'license': 'AGPL-3',
-}
+from osv import osv
+from osv import fields
+
+
+class mrp_production(osv.osv):
+    _inherit = 'mrp.production'
+
+    _columns = {
+        'sale_line_id': fields.related('move_prod_id', 'sale_line_id', type='many2one', relation='sale.order.line', readonly=True, store=True, string='Sale Line'),
+        'sale_id': fields.related('sale_line_id', 'order_id', type='many2one', relation='sale.order', string='Sale Order', readonly=True, store=True, help='Sale order linked to this production order.'),
+        'partner_id': fields.related('sale_id', 'partner_id', type='many2one', relation='res.partner', string='Partner', readonly=True, store=True, help='Partner linked to this production order'),
+        'sale_line_notes': fields.related('sale_line_id', 'notes', type='text', string='Notes', readonly=True, store=True, help='Notes from sale order line'),
+        'prodlot_id': fields.related('sale_line_id', 'prodlot_id', type='many2one', relation='stock.production.lot', string='Production Lot', readonly=True, store=True, help='Production lot is used to put a serial number on the production'),
+    }
+
+mrp_production()
+
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
