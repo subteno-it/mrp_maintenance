@@ -42,14 +42,29 @@ class mrp_production(osv.osv):
         If we do not have a product in the BOM, OpenERP will not create picking and movement of finished product.
         In the case of maintenance, we have a BOM empty so we add the movement of finished product.
         """
+        workcenter_line_obj = self.pool.get('mrp.production.workcenter.line')
         for production in self.browse(cr, uid, ids, context=context):
             if not production.move_created_ids \
                and production.sale_id \
                and production.sale_id.type == 'maintenance':
                 self._make_production_produce_line(cr, uid, production, context=context)
+                workcenter_line_obj.write(cr, uid, [line.id for line in production.sale_id.workcenter_line_ids], {'production_id': production.id}, context=context)
         return True
 
 mrp_production()
+
+
+class mrp_production_workcenter_line(osv.osv):
+    _inherit = 'mrp.production.workcenter.line'
+
+    _columns = {
+        'sale_id': fields.many2one('sale.order', 'Sale order'),
+        # Just remove required=True for possibility to add record in sale order
+        'production_id': fields.many2one('mrp.production', 'Production Order', select=True, ondelete='cascade', required=False),
+    }
+
+mrp_production_workcenter_line()
+
 
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

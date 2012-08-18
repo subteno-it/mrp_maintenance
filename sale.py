@@ -32,6 +32,7 @@ class sale_order(osv.osv):
 
     _columns = {
         'type': fields.selection([('normal', 'Normal'), ('maintenance', 'Maintenance')], 'Type', help='Type of sale order'),
+        'workcenter_line_ids': fields.one2many('mrp.production.workcenter.line', 'sale_id', 'Workcenter lines', readonly=True, states={'draft': [('readonly', False)]}),
     }
 
     _defaults = {

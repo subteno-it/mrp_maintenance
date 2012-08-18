@@ -37,6 +37,22 @@
                 <xpath expr="/form/notebook/page/field/form/notebook/page/group/field[@name='notes']" position="after">
                     <field name="prodlot_id" colspan="5"/>
                 </xpath>
+                <xpath expr="/form/notebook" position="inside">
+                    <page string="Work Orders" attrs="{'invisible': [('type', '!=', 'maintenance')]}">
+                        <field colspan="4" name="workcenter_line_ids" nolabel="1">
+                            <form string="Production Work Centers">
+                                <field colspan="4" name="name"/>
+                                <field name="workcenter_id" widget="selection"/>
+                                <field name="hour" widget="float_time"/>
+                            </form>
+                            <tree string="Production Work Centers" editable="top">
+                                <field name="name"/>
+                                <field name="workcenter_id" widget="selection"/>
+                                <field name="hour" widget="float_time"/>
+                            </tree>
+                        </field>
+                    </page>
+                </xpath>
             </field>
         </record>
 
