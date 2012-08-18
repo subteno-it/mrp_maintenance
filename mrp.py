@@ -37,6 +37,18 @@ class mrp_production(osv.osv):
         'prodlot_id': fields.related('sale_line_id', 'prodlot_id', type='many2one', relation='stock.production.lot', string='Production Lot', readonly=True, store=True, help='Production lot is used to put a serial number on the production'),
     }
 
+    def action_confirm_maintenance(self, cr, uid, ids, context=None):
+        """
+        If we do not have a product in the BOM, OpenERP will not create picking and movement of finished product.
+        In the case of maintenance, we have a BOM empty so we add the movement of finished product.
+        """
+        for production in self.browse(cr, uid, ids, context=context):
+            if not production.move_created_ids \
+               and production.sale_id \
+               and production.sale_id.type == 'maintenance':
+                self._make_production_produce_line(cr, uid, production, context=context)
+        return True
+
 mrp_production()
 
 

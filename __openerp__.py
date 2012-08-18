@@ -43,6 +43,7 @@
         'sale_view.xml',
         'procurement_workflow.xml',
         'mrp_view.xml',
+        'mrp_workflow.xml',
         #'wizard/wizard.xml',
     ],
     'demo_xml': [],
