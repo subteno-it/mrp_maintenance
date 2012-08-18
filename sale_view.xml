@@ -34,6 +34,9 @@
                 <xpath expr="//field[@name='invoice_quantity']" position="after">
                     <field name="type" invisible="1"/>
                 </xpath>
+                <xpath expr="/form/notebook/page/field/form/notebook/page/group/field[@name='notes']" position="after">
+                    <field name="prodlot_id" colspan="5"/>
+                </xpath>
             </field>
         </record>
 
@@ -45,7 +48,7 @@
             <field name="domain">[('type', '!=', 'maintenance')]</field>
         </record>
         <record id="action_sale_order_form" model="ir.actions.act_window">
-            <field name="name">Sales Orders Maintenance</field>
+            <field name="name">Sales Orders</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">sale.order</field>
             <field name="view_type">form</field>
@@ -56,5 +59,6 @@
             <field name="help">Sales Orders help you manage quotations and orders from your customers. OpenERP suggests that you start by creating a quotation. Once it is confirmed, the quotation will be converted into a Sales Order. OpenERP can handle several types of products so that a sales order may trigger tasks, delivery orders, manufacturing orders, purchases and so on. Based on the configuration of the sales order, a draft invoice will be generated so that you just have to confirm it when you want to bill your customer.</field>
         </record>
         <menuitem action="action_sale_order_form" id="menu_sale_order" parent="base.menu_mrp_sales" sequence="3" groups="base.group_sale_salesman,base.group_sale_manager"/>
+
     </data>
 </openerp>

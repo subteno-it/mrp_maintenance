@@ -37,7 +37,25 @@ class sale_order(osv.osv):
         'type': 'normal',
     }
 
+    def _create_pickings_and_procurements(self, cr, uid, order, order_lines, picking_id=False, context=None):
+        """
+        In Maintenance, the line must be in make_to_order for having link between mrp.production and sale.order
+        """
+        if order.type == 'maintenance':
+            sale_line_obj = self.pool.get('sale.order.line')
+            sale_line_obj.write(cr, uid, [line.id for line in order_lines], {'type': 'make_to_order'}, context=context)
+        super(sale_order, self)._create_pickings_and_procurements(cr, uid, order=order, order_lines=order_lines, picking_id=picking_id, context=context)
+
 sale_order()
 
+
+class sale_order_line(osv.osv):
+    _inherit = 'sale.order.line'
+
+    _columns = {
+        'prodlot_id': fields.many2one('stock.production.lot', 'Production Lot', help='Production lot is used to put a serial number on the production'),
+    }
+
+sale_order_line()
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

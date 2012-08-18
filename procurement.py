@@ -22,34 +22,24 @@
 #
 ##############################################################################
 
-{
-    'name': 'MRP Maintenance',
-    'version': '1.0',
-    "category" : "Manufacturing",
-    'description': """Manage maintenance in production order""",
-    'author': 'SYLEAM',
-    'website': 'http://www.syleam.fr/',
-    'depends': [
-        'base',
-        'mrp',
-        'sale',
-        'stock',
-    ],
-    'init_xml': [],
-    'images': [],
-    'update_xml': [
-        #'security/groups.xml',
-        #'security/ir.model.access.csv',
-        'sale_view.xml',
-        'procurement_workflow.xml',
-        #'wizard/wizard.xml',
-    ],
-    'demo_xml': [],
-    'test': [],
-    'installable': True,
-    'application': True,
-    'active': False,
-    'license': 'AGPL-3',
-}
+from osv import osv
+
+
+class procuremen_order(osv.osv):
+    _inherit = 'procurement.order'
+
+    def test_maintenance(self, cr, uid, ids):
+        """ Tests whether type of sale order is maintenance or not.
+        @return: True or False
+        """
+        for record in self.browse(cr, uid, ids):
+            if record.move_id and \
+               record.move_id.sale_line_id and \
+               record.move_id.sale_line_id.order_id and \
+               record.move_id.sale_line_id.order_id.type == 'maintenance':
+                return True
+        return False
+
+procuremen_order()
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
