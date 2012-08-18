@@ -22,33 +22,22 @@
 #
 ##############################################################################
 
-{
-    'name': 'MRP Maintenance',
-    'version': '1.0',
-    "category" : "Manufacturing",
-    'description': """Manage maintenance in production order""",
-    'author': 'SYLEAM',
-    'website': 'http://www.syleam.fr/',
-    'depends': [
-        'base',
-        'mrp',
-        'sale',
-        'stock',
-    ],
-    'init_xml': [],
-    'images': [],
-    'update_xml': [
-        #'security/groups.xml',
-        #'security/ir.model.access.csv',
-        'sale_view.xml',
-        #'wizard/wizard.xml',
-    ],
-    'demo_xml': [],
-    'test': [],
-    'installable': True,
-    'application': True,
-    'active': False,
-    'license': 'AGPL-3',
-}
+from osv import osv
+from osv import fields
+
+
+class sale_order(osv.osv):
+    _inherit = 'sale.order'
+
+    _columns = {
+        'type': fields.selection([('normal', 'Normal'), ('maintenance', 'Maintenance')], 'Type', help='Type of sale order'),
+    }
+
+    _defaults = {
+        'type': 'normal',
+    }
+
+sale_order()
+
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
