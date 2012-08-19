@@ -68,10 +68,15 @@ class mrp_production(osv.osv):
                         'product_id': line.product_id.id,
                         'product_qty': line.product_qty,
                         'product_uom': line.product_uom.id,
-                        'move_id': production.move_prod_id.id,
+                        'product_uos_qty': line.product_uos_qty or 0.,
+                        'product_uos': line.product_uos and line.product_uos.id or False,
+                        'move_id': line.id,
+                        'move_dest_id': production.move_prod_id.id,
                         'price_unit': line.sale_line_id and line.sale_line_id.price_unit or line.product_id.list_price or 0.,
                         'discount': line.sale_line_id and line.sale_line_id.discount or 0.,
                         'production_id': production.id,
+                        'prodlot_id': line.prodlot_id and line.prodlot_id.id or False,
+                        'tracking_id': line.tracking_id and line.tracking_id.id or False,
                     }))
                 workcenter_lines = {}
                 # Group by workcenter_id
@@ -99,7 +104,7 @@ class mrp_production(osv.osv):
                         'product_id': lines[0].workcenter_id.product_id.id,
                         'product_qty': nb_hour,
                         'product_uom': lines[0].workcenter_id.product_id.uom_id.id,
-                        'move_id': production.move_prod_id.id,
+                        'move_dest_id': production.move_prod_id.id,
                         'price_unit': price_unit or 0.,
                         'discount': 0.,
                         'production_id': production.id,

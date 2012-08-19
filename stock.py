@@ -42,14 +42,19 @@ class stock_picking_production_line(osv.osv):
         'name': fields.char('Description', size=256, help="Description of the product"),
         'sequence': fields.integer('Sequence', help='Sequence'),
         'price_unit': fields.float('Price Unit', digits_compute=dp.get_precision('Sale Price'), help="Price from production"),
-        'product_qty': fields.float('Quantity', digits_compute=dp.get_precision('Product UoS'), help="Quantity use from production production"),
         'discount': fields.float('Discount', digits=(16, 2), help="Sale discount"),
         'picking_id': fields.many2one('stock.picking', 'Picking', help="Picking Parent"),
         'product_id': fields.many2one('product.product', 'Product', help="Product linked"),
+        'product_qty': fields.float('Quantity', digits_compute=dp.get_precision('Product UoS'), help="Quantity use from production production"),
         'product_uom': fields.many2one('product.uom', 'Unit', help="unit use for affaire"),
+        'product_uos_qty': fields.float('Quantity (UOS)', digits_compute=dp.get_precision('Product UoM'), states={'done': [('readonly', True)]}),
+        'product_uos': fields.many2one('product.uom', 'Product UOS', states={'done': [('readonly', True)]}),
         'production_id': fields.many2one('mrp.production', 'Production', help='MRP Production'),
         'price_subtotal': fields.function(_amount_line, method=True, string='SubTotal', type='float', digits_compute=dp.get_precision('Sale Price'), store=False, help='Total price of this line'),
-        'move_id': fields.many2one('stock.move', 'Move', required=True, help='Move product from production order'),
+        'move_id': fields.many2one('stock.move', 'Move', required=True, help='Raw product from production order'),
+        'move_dest_id': fields.many2one('stock.move', 'Move Production', required=True, help='Move product from production order'),
+        'prodlot_id': fields.many2one('stock.production.lot', 'Production Lot', states={'done': [('readonly', True)]}, help="Production lot is used to put a serial number on the production", select=True),
+        'tracking_id': fields.many2one('stock.tracking', 'Pack', select=True, states={'done': [('readonly', True)]}, help="Logistical shipping unit: pallet, box, pack ..."),
     }
 
     _defaults = {
