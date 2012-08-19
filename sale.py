@@ -33,6 +33,7 @@ class sale_order(osv.osv):
     _columns = {
         'type': fields.selection([('normal', 'Normal'), ('maintenance', 'Maintenance')], 'Type', help='Type of sale order'),
         'workcenter_line_ids': fields.one2many('mrp.production.workcenter.line', 'sale_id', 'Workcenter lines', readonly=True, states={'draft': [('readonly', False)]}),
+        'production_id': fields.many2one('mrp.production', 'Production', help='Production order has needed product'),
     }
 
     _defaults = {
@@ -47,7 +48,7 @@ class sale_order(osv.osv):
             if order.type == 'maintenance':
                 for line in order.order_line:
                     if not line.prodlot_id:
-                        raise osv.except_osv(_('Production Lot missing!'),_('Please fill production lot for product : %s') % line.product_id.name)
+                        raise osv.except_osv(_('Production Lot missing!'), _('Please fill production lot for product : %s') % line.product_id.name)
         return super(sale_order, self).action_wait(cr, uid, ids, context=context)
 
     def _create_pickings_and_procurements(self, cr, uid, order, order_lines, picking_id=False, context=None):
@@ -58,6 +59,44 @@ class sale_order(osv.osv):
             sale_line_obj = self.pool.get('sale.order.line')
             sale_line_obj.write(cr, uid, [line.id for line in order_lines], {'type': 'make_to_order'}, context=context)
         return super(sale_order, self)._create_pickings_and_procurements(cr, uid, order=order, order_lines=order_lines, picking_id=picking_id, context=context)
+
+    def _prepare_order_picking(self, cr, uid, order, context=None):
+        if order.production_id:
+            pick_name = self.pool.get('ir.sequence').get(cr, uid, 'stock.picking.internal')
+            return {
+                'name': pick_name,
+                'origin': order.name,
+                'date': order.date_order,
+                'type': 'internal',
+                'state': 'auto',
+                'move_type': order.picking_policy,
+                'sale_id': order.id,
+                'address_id': order.partner_shipping_id.id,
+                'note': order.note,
+                'invoice_state': 'none',
+                'company_id': order.company_id.id,
+            }
+        return super(sale_order, self)._prepare_order_picking(cr, uid, order=order, context=context)
+
+    def _prepare_order_line_move(self, cr, uid, order, line, picking_id, date_planned, context=None):
+        """
+        If sale order is for mrp production, replace default destination location by production location of product
+        """
+        results = super(sale_order, self)._prepare_order_line_move(cr, uid, order=order, line=line, picking_id=picking_id, date_planned=date_planned, context=context)
+        if order.production_id \
+           and line.product_id \
+           and line.product_id.property_stock_production \
+           and line.product_id.property_stock_production.id:
+            results['location_dest_id'] = line.product_id.property_stock_production.id
+        return results
+
+    def ship_recreate(self, cr, uid, order, line, move_id, proc_id):
+        """
+        If sale order is for mrp production, link move_id in mrp_production
+        """
+        if order.production_id:
+            order.production_id.write({'move_lines': [(4, move_id)]})
+        return super(sale_order, self).ship_recreate(cr, uid, order=order, line=line, move_id=move_id, proc_id=proc_id)
 
 sale_order()
 

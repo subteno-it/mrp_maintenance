@@ -53,6 +53,9 @@
                         </field>
                     </page>
                 </xpath>
+                <xpath expr="//field[@name='origin']" position="after">
+                    <field name="production_id"/>
+                </xpath>
             </field>
         </record>
 
