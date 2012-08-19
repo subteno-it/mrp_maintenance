@@ -24,6 +24,8 @@
 
 from osv import osv
 from osv import fields
+import time
+from tools import DEFAULT_SERVER_DATE_FORMAT
 
 
 class mrp_production(osv.osv):
@@ -51,6 +53,61 @@ class mrp_production(osv.osv):
                 workcenter_line_obj.write(cr, uid, [line.id for line in production.sale_id.workcenter_line_ids], {'production_id': production.id}, context=context)
         return True
 
+    def action_production_end(self, cr, uid, ids):
+        """
+        Copy raw product and workcenter in stock picking
+        @return: True
+        """
+        picking_obj = self.pool.get('stock.picking')
+        for production in self.browse(cr, uid, ids):
+            vals = {'production_line_ids': []}
+            if production.sale_id and production.sale_id.type == 'maintenance':
+                for line in production.move_lines2:
+                    vals['production_line_ids'].append((0, 0, {
+                        'name': line.name,
+                        'product_id': line.product_id.id,
+                        'product_qty': line.product_qty,
+                        'product_uom': line.product_uom.id,
+                        'move_id': production.move_prod_id.id,
+                        'price_unit': line.sale_line_id and line.sale_line_id.price_unit or line.product_id.list_price or 0.,
+                        'discount': line.sale_line_id and line.sale_line_id.discount or 0.,
+                        'production_id': production.id,
+                    }))
+                workcenter_lines = {}
+                # Group by workcenter_id
+                for line in production.workcenter_lines:
+                    if line.workcenter_id.id in workcenter_lines:
+                        workcenter_lines[line.workcenter_id.id].append(line)
+                        continue
+                    workcenter_lines[line.workcenter_id.id] = [line]
+                pricelist_id = production.sale_id.pricelist_id.id
+                partner_id = production.sale_id.partner_id.id
+                for workcenter_id, lines in workcenter_lines.items():
+                    nb_hour = 0.
+                    for line in lines:
+                        nb_hour += line.hour
+                    price_unit = self.pool.get('product.pricelist').price_get(cr, uid, [pricelist_id],
+                                              lines[0].workcenter_id.product_id.id, nb_hour or 1.0,
+                                              partner_id,
+                                              {
+                                                  'uom': lines[0].workcenter_id.product_id.uom_id.id,
+                                                  'date': time.strftime(DEFAULT_SERVER_DATE_FORMAT),
+                                              }
+                                             )[pricelist_id]
+                    vals['production_line_ids'].append((0, 0, {
+                        'name': lines[0].workcenter_id.name,
+                        'product_id': lines[0].workcenter_id.product_id.id,
+                        'product_qty': nb_hour,
+                        'product_uom': lines[0].workcenter_id.product_id.uom_id.id,
+                        'move_id': production.move_prod_id.id,
+                        'price_unit': price_unit or 0.,
+                        'discount': 0.,
+                        'production_id': production.id,
+                    }))
+                if vals:
+                    picking_obj.write(cr, uid, [production.move_prod_id.picking_id.id], vals)
+        return super(mrp_production, self).action_production_end(cr, uid, ids)
+
 mrp_production()
 
 
@@ -65,6 +122,15 @@ class mrp_production_workcenter_line(osv.osv):
 
 mrp_production_workcenter_line()
 
+
+class mrp_workcenter(osv.osv):
+    _inherit = 'mrp.workcenter'
+
+    _columns = {
+        'product_id': fields.many2one('product.product','Work Center Product', required=True, help="Fill this product to track easily your production costs in the analytic accounting."),
+    }
+
+mrp_workcenter()
 
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

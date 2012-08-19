@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        ##############################################################################
+        #
+        #    mrp_maintenance module for OpenERP, Manage maintenance in production order
+        #    Copyright (C) 2012 SYLEAM Info Services ([http://www.syleam.fr/]) 
+        #              Sebastien LANGE [sebastien.lange@syleam.fr]
+        #
+        #    This file is a part of mrp_maintenance
+        #
+        #    mrp_maintenance is free software: you can redistribute it and/or modify
+        #    it under the terms of the GNU Affero General Public License as published by
+        #    the Free Software Foundation, either version 3 of the License, or
+        #    (at your option) any later version.
+        #
+        #    mrp_maintenance is distributed in the hope that it will be useful,
+        #    but WITHOUT ANY WARRANTY; without even the implied warranty of
+        #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        #    GNU Affero General Public License for more details.
+        #
+        #    You should have received a copy of the GNU Affero General Public License
+        #    along with this program.  If not, see [http://www.gnu.org/licenses/].
+        #
+        ##############################################################################
+
+        <record id="view_stock_picking_out_form" model="ir.ui.view">
+            <field name="name">stock.picking.out.form</field>
+            <field name="model">stock.picking</field>
+            <field name="type">form</field>
+            <field name="priority" eval="32"/>
+            <field name="inherit_id" ref="stock.view_picking_out_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="/form/notebook/page[@string='Notes']" position="before">
+                    <page string="Production line" attrs="{'invisible':[('invoice_state', 'not in', ('2binvoiced', 'invoiced'))]}">
+                        <field name="production_line_ids" nolabel="1" colspan="4">
+                            <tree string="Lines">
+                                <field name='name'/>
+                                <field name='price_unit'/>
+                                <field name='product_qty'/>
+                                <field name='discount'/>
+                                <field name='price_subtotal'/>
+                            </tree>
+                            <form string="Lines">
+                                <field name='name' readonly="1"/>
+                                <field name='price_unit' readonly="1"/>
+                                <field name='product_qty' readonly="1"/>
+                                <field name='discount' readonly="1"/>
+                                <field name='price_subtotal' readonly="1"/>
+                            </form>
+                        </field>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>

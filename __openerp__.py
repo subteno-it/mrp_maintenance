@@ -44,6 +44,7 @@
         'procurement_workflow.xml',
         'mrp_view.xml',
         'mrp_workflow.xml',
+        'stock_view.xml',
         #'wizard/wizard.xml',
     ],
     'demo_xml': [],
