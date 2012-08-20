@@ -51,7 +51,7 @@ class stock_picking_production_line(osv.osv):
         'product_uos': fields.many2one('product.uom', 'Product UOS', states={'done': [('readonly', True)]}),
         'production_id': fields.many2one('mrp.production', 'Production', help='MRP Production'),
         'price_subtotal': fields.function(_amount_line, method=True, string='SubTotal', type='float', digits_compute=dp.get_precision('Sale Price'), store=False, help='Total price of this line'),
-        'move_id': fields.many2one('stock.move', 'Move', required=True, help='Raw product from production order'),
+        'move_id': fields.many2one('stock.move', 'Move', required=False, help='Raw product from production order'),
         'move_dest_id': fields.many2one('stock.move', 'Move Production', required=True, help='Move product from production order'),
         'prodlot_id': fields.many2one('stock.production.lot', 'Production Lot', states={'done': [('readonly', True)]}, help="Production lot is used to put a serial number on the production", select=True),
         'tracking_id': fields.many2one('stock.tracking', 'Pack', select=True, states={'done': [('readonly', True)]}, help="Logistical shipping unit: pallet, box, pack ..."),
