@@ -86,5 +86,13 @@
         </record>
         <menuitem action="production_list_to_invoice" id="menu_action_production_list_to_invoice" parent="base.menu_invoiced" sequence="40"/>
 
+        <act_window
+            context="{'search_default_production_id': [active_id], 'default_production_id': active_id, 'search_default_partner_id': [partner_id], 'default_partner_id': partner_id, 'default_order_policy': 'picking'}"
+            domain="[('production_id', '=', active_id)]"
+            id="act_mrp_production_2_sale_order"
+            name="Add products"
+            res_model="sale.order"
+            src_model="mrp.production"/>
+
     </data>
 </openerp>
