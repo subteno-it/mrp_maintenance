@@ -36,7 +36,7 @@ class procuremen_order(osv.osv):
             if record.move_id and \
                record.move_id.sale_line_id and \
                record.move_id.sale_line_id.order_id and \
-               record.move_id.sale_line_id.order_id.type == 'maintenance':
+               record.move_id.sale_line_id.order_id.is_maintenance:
                 return True
         return False
 
