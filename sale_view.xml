@@ -59,7 +59,7 @@
             </field>
         </record>
 
-        <menuitem id="base.menu_mrp_sales" name="Sales"
+        <menuitem id="menu_mrp_sales" name="Sales"
             parent="base.menu_mrp_root" sequence="0"
             />
 
