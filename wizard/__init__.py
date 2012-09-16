@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    mrp_maintenance module for OpenERP, Manage maintenance in production order
-#    Copyright (C) 2012 SYLEAM Info Services (<http://www.syleam.fr/>) 
+#    Copyright (C) 2012 SYLEAM Info Services (<http://www.syleam.fr/>)
 #              Sebastien LANGE <sebastien.lange@syleam.fr>
 #
 #    This file is a part of mrp_maintenance
@@ -22,6 +22,6 @@
 #
 ##############################################################################
 
-
+import mrp_invoice
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

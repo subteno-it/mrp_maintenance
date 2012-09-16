@@ -24,8 +24,6 @@
 
 from osv import osv
 from osv import fields
-import time
-from tools import DEFAULT_SERVER_DATE_FORMAT
 
 
 class mrp_production(osv.osv):
@@ -37,6 +35,15 @@ class mrp_production(osv.osv):
         'partner_id': fields.related('sale_id', 'partner_id', type='many2one', relation='res.partner', string='Partner', readonly=True, store=True, help='Partner linked to this production order'),
         'sale_line_notes': fields.related('sale_line_id', 'notes', type='text', string='Notes', readonly=True, store=True, help='Notes from sale order line'),
         'prodlot_id': fields.related('sale_line_id', 'prodlot_id', type='many2one', relation='stock.production.lot', string='Production Lot', readonly=True, store=True, help='Production lot is used to put a serial number on the production'),
+        'invoice_state': fields.selection([
+            ("invoiced", "Invoiced"),
+            ("2binvoiced", "To Be Invoiced"),
+            ("none", "Not Applicable")], "Invoice Control",
+            select=True, required=True, readonly=True, states={'draft': [('readonly', False)]}),
+    }
+
+    _defaults = {
+        'invoice_state': 'none',
     }
 
     def action_confirm_maintenance(self, cr, uid, ids, context=None):
@@ -46,72 +53,13 @@ class mrp_production(osv.osv):
         """
         workcenter_line_obj = self.pool.get('mrp.production.workcenter.line')
         for production in self.browse(cr, uid, ids, context=context):
-            if not production.move_created_ids \
-               and production.sale_id \
-               and production.sale_id.type == 'maintenance':
-                self._make_production_produce_line(cr, uid, production, context=context)
-                workcenter_line_obj.write(cr, uid, [line.id for line in production.sale_id.workcenter_line_ids], {'production_id': production.id}, context=context)
+            if production.sale_id and production.sale_id.is_maintenance:
+                production.write({'invoice_state': '2binvoiced'})
+                if not production.move_created_ids:
+                    self._make_production_produce_line(cr, uid, production, context=context)
+                    workcenter_line_obj.write(cr, uid, [line.id for line in production.sale_id.workcenter_line_ids], {'production_id': production.id}, context=context)
         return True
 
-    def action_production_end(self, cr, uid, ids):
-        """
-        Copy raw product and workcenter in stock picking
-        @return: True
-        """
-        picking_obj = self.pool.get('stock.picking')
-        for production in self.browse(cr, uid, ids):
-            vals = {'production_line_ids': []}
-            if production.sale_id and production.sale_id.type == 'maintenance':
-                for line in production.move_lines2:
-                    vals['production_line_ids'].append((0, 0, {
-                        'name': line.name,
-                        'product_id': line.product_id.id,
-                        'product_qty': line.product_qty,
-                        'product_uom': line.product_uom.id,
-                        'product_uos_qty': line.product_uos_qty or 0.,
-                        'product_uos': line.product_uos and line.product_uos.id or False,
-                        'move_id': line.id,
-                        'move_dest_id': production.move_prod_id.id,
-                        'price_unit': line.sale_line_id and line.sale_line_id.price_unit or line.product_id.list_price or 0.,
-                        'discount': line.sale_line_id and line.sale_line_id.discount or 0.,
-                        'production_id': production.id,
-                        'prodlot_id': line.prodlot_id and line.prodlot_id.id or False,
-                        'tracking_id': line.tracking_id and line.tracking_id.id or False,
-                    }))
-                workcenter_lines = {}
-                # Group by workcenter_id
-                for line in production.workcenter_lines:
-                    if line.workcenter_id.id in workcenter_lines:
-                        workcenter_lines[line.workcenter_id.id].append(line)
-                        continue
-                    workcenter_lines[line.workcenter_id.id] = [line]
-                pricelist_id = production.sale_id.pricelist_id.id
-                partner_id = production.sale_id.partner_id.id
-                for workcenter_id, lines in workcenter_lines.items():
-                    nb_hour = 0.
-                    for line in lines:
-                        nb_hour += line.hour
-                    price_unit = self.pool.get('product.pricelist').price_get(cr, uid, [pricelist_id],
-                                              lines[0].workcenter_id.product_id.id, nb_hour or 1.0,
-                                              partner_id,
-                                              {
-                                                  'uom': lines[0].workcenter_id.product_id.uom_id.id,
-                                                  'date': time.strftime(DEFAULT_SERVER_DATE_FORMAT),
-                                              }
-                                             )[pricelist_id]
-                    vals['production_line_ids'].append((0, 0, {
-                        'name': lines[0].workcenter_id.name,
-                        'product_id': lines[0].workcenter_id.product_id.id,
-                        'product_qty': nb_hour,
-                        'product_uom': lines[0].workcenter_id.product_id.uom_id.id,
-                        'move_dest_id': production.move_prod_id.id,
-                        'price_unit': price_unit or 0.,
-                        'discount': 0.,
-                        'production_id': production.id,
-                    }))
-                if vals:
-                    picking_obj.write(cr, uid, [production.move_prod_id.picking_id.id], vals)
-        return super(mrp_production, self).action_production_end(cr, uid, ids)
 
 mrp_production()
 

@@ -24,51 +24,6 @@
 
 from osv import osv
 from osv import fields
-import decimal_precision as dp
-
-
-class stock_picking_production_line(osv.osv):
-    _name = 'stock.picking.production.line'
-    _description = 'Product and service consummed from production in picking'
-    _order = 'sequence,id'
-
-    def _amount_line(self, cr, uid, ids, field_name, arg, context=None):
-        res = {}
-        for line in self.browse(cr, uid, ids, context=context):
-            res[line.id] = line.product_qty * (line.price_unit * (1 - (line.discount or 0.0) / 100.0))
-        return res
-
-    _columns = {
-        'name': fields.char('Description', size=256, help="Description of the product"),
-        'sequence': fields.integer('Sequence', help='Sequence'),
-        'price_unit': fields.float('Price Unit', digits_compute=dp.get_precision('Sale Price'), help="Price from production"),
-        'discount': fields.float('Discount', digits=(16, 2), help="Sale discount"),
-        'picking_id': fields.many2one('stock.picking', 'Picking', help="Picking Parent"),
-        'product_id': fields.many2one('product.product', 'Product', help="Product linked"),
-        'product_qty': fields.float('Quantity', digits_compute=dp.get_precision('Product UoS'), help="Quantity use from production production"),
-        'product_uom': fields.many2one('product.uom', 'Unit', help="unit use for affaire"),
-        'product_uos_qty': fields.float('Quantity (UOS)', digits_compute=dp.get_precision('Product UoM'), states={'done': [('readonly', True)]}),
-        'product_uos': fields.many2one('product.uom', 'Product UOS', states={'done': [('readonly', True)]}),
-        'production_id': fields.many2one('mrp.production', 'Production', help='MRP Production'),
-        'price_subtotal': fields.function(_amount_line, method=True, string='SubTotal', type='float', digits_compute=dp.get_precision('Sale Price'), store=False, help='Total price of this line'),
-        'move_id': fields.many2one('stock.move', 'Move', required=False, help='Raw product from production order'),
-        'move_dest_id': fields.many2one('stock.move', 'Move Production', required=True, help='Move product from production order'),
-        'prodlot_id': fields.many2one('stock.production.lot', 'Production Lot', states={'done': [('readonly', True)]}, help="Production lot is used to put a serial number on the production", select=True),
-        'tracking_id': fields.many2one('stock.tracking', 'Pack', select=True, states={'done': [('readonly', True)]}, help="Logistical shipping unit: pallet, box, pack ..."),
-    }
-
-    _defaults = {
-        'discount': 0.0,
-        'product_qty': 1.,
-        'sequence': 10,
-        'price_unit': 0.0,
-    }
-
-    _sql_constraints = [
-        ('production_not_null', 'check (production_id IS NOT NULL)', '\n\nYou cannot add a new production line in picking directly!'),
-    ]
-
-stock_picking_production_line()
 
 
 class stock_picking(osv.osv):

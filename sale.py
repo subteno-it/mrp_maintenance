@@ -31,13 +31,9 @@ class sale_order(osv.osv):
     _inherit = 'sale.order'
 
     _columns = {
-        'type': fields.selection([('normal', 'Normal'), ('maintenance', 'Maintenance')], 'Type', help='Type of sale order'),
+        'is_maintenance': fields.boolean('Maintenance', help='If set, this sale order is maintenance order'),
         'workcenter_line_ids': fields.one2many('mrp.production.workcenter.line', 'sale_id', 'Workcenter lines', readonly=True, states={'draft': [('readonly', False)]}),
         'production_id': fields.many2one('mrp.production', 'Production', help='Production order has needed product'),
-    }
-
-    _defaults = {
-        'type': 'normal',
     }
 
     def action_wait(self, cr, uid, ids, context=None):
@@ -48,7 +44,7 @@ class sale_order(osv.osv):
         """
         bom_obj = self.pool.get('mrp.bom')
         for order in self.browse(cr, uid, ids):
-            if order.type == 'maintenance':
+            if order.is_maintenance:
                 for line in order.order_line:
                     if not line.prodlot_id:
                         raise osv.except_osv(_('Production Lot missing!'), _('Please fill production lot for product : %s') % line.product_id.name)
@@ -59,7 +55,7 @@ class sale_order(osv.osv):
                                 'name': line.product_id.name,
                                 'product_id': line.product_id.id,
                                 'product_qty': line.product_uom_qty,
-                                'product_uom': line.product_uom
+                                'product_uom': line.product_uom.id,
                             }, context=context)
                     else:
                         raise osv.except_osv(_('Product supply method!'), _('The product %s must be set in produce method') % line.product_id.name)
@@ -69,7 +65,7 @@ class sale_order(osv.osv):
         """
         In Maintenance, the line must be in make_to_order for having link between mrp.production and sale.order
         """
-        if order.type == 'maintenance':
+        if order.is_maintenance:
             sale_line_obj = self.pool.get('sale.order.line')
             sale_line_obj.write(cr, uid, [line.id for line in order_lines], {'type': 'make_to_order'}, context=context)
         return super(sale_order, self)._create_pickings_and_procurements(cr, uid, order=order, order_lines=order_lines, picking_id=picking_id, context=context)
@@ -87,7 +83,7 @@ class sale_order(osv.osv):
                 'sale_id': order.id,
                 'address_id': order.partner_shipping_id.id,
                 'note': order.note,
-                'invoice_state': 'none',
+                'invoice_state': (order.order_policy=='picking' and '2binvoiced') or 'none',
                 'company_id': order.company_id.id,
             }
         return super(sale_order, self)._prepare_order_picking(cr, uid, order=order, context=context)
