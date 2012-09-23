@@ -46,6 +46,8 @@ class sale_order(osv.osv):
         for order in self.browse(cr, uid, ids):
             if order.is_maintenance:
                 for line in order.order_line:
+                    if not line.product_id:
+                        raise osv.except_osv(_('Product missing!'), _('Please fill product for : %s') % line.name)
                     if not line.prodlot_id:
                         raise osv.except_osv(_('Production Lot missing!'), _('Please fill production lot for product : %s') % line.product_id.name)
                     bom_ids = bom_obj.search(cr, uid, [('product_id', '=', line.product_id.id)], limit=1, context=context)
