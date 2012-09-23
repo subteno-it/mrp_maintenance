@@ -40,6 +40,30 @@ class procuremen_order(osv.osv):
                 return True
         return False
 
+    def check_buy(self, cr, uid, ids):
+        """
+        If sale order is maintenance, create always mrp production
+        """
+        for procurement in self.browse(cr, uid, ids):
+            if procurement.move_id and \
+               procurement.move_id.sale_line_id and \
+               procurement.move_id.sale_line_id.order_id and \
+               procurement.move_id.sale_line_id.order_id.is_maintenance:
+                return False
+        return super(procuremen_order, self).check_buy(cr, uid, ids)
+
+    def check_produce(self, cr, uid, ids, context=None):
+        """
+        If sale order is maintenance, create always mrp production
+        """
+        for procurement in self.browse(cr, uid, ids, context=context):
+            if procurement.move_id and \
+               procurement.move_id.sale_line_id and \
+               procurement.move_id.sale_line_id.order_id and \
+               procurement.move_id.sale_line_id.order_id.is_maintenance:
+                return True
+        return super(procuremen_order, self).check_produce(cr, uid, ids, context=context)
+
 procuremen_order()
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

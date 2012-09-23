@@ -48,17 +48,14 @@ class sale_order(osv.osv):
                 for line in order.order_line:
                     if not line.prodlot_id:
                         raise osv.except_osv(_('Production Lot missing!'), _('Please fill production lot for product : %s') % line.product_id.name)
-                    if line.product_id.supply_method == 'produce':
-                        bom_ids = bom_obj.search(cr, uid, [('product_id', '=', line.product_id.id)], limit=1, context=context)
-                        if not bom_ids:
-                            bom_obj.create(cr, uid, {
-                                'name': line.product_id.name,
-                                'product_id': line.product_id.id,
-                                'product_qty': line.product_uom_qty,
-                                'product_uom': line.product_uom.id,
-                            }, context=context)
-                    else:
-                        raise osv.except_osv(_('Product supply method!'), _('The product %s must be set in produce method') % line.product_id.name)
+                    bom_ids = bom_obj.search(cr, uid, [('product_id', '=', line.product_id.id)], limit=1, context=context)
+                    if not bom_ids:
+                        bom_obj.create(cr, uid, {
+                            'name': line.product_id.name,
+                            'product_id': line.product_id.id,
+                            'product_qty': line.product_uom_qty,
+                            'product_uom': line.product_uom.id,
+                        }, context=context)
         return super(sale_order, self).action_wait(cr, uid, ids, context=context)
 
     def _create_pickings_and_procurements(self, cr, uid, order, order_lines, picking_id=False, context=None):
