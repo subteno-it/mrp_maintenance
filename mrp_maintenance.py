@@ -27,7 +27,7 @@ from osv import osv
 from osv import fields
 
 
-class maintenance_type(osv.osv):
+class mrp_maintenance_type(osv.osv):
     _name = 'mrp.maintenance.type'
     _description = 'Maintenance Type'
 
@@ -41,6 +41,6 @@ class maintenance_type(osv.osv):
         'is_invoice': False,
     }
 
-maintenance_type()
+mrp_maintenance_type()
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
