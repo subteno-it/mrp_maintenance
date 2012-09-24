@@ -38,6 +38,7 @@
                     <newline/>
                     <field name="partner_id"/>
                     <field name="sale_id"/>
+                    <field name="maintenance_type_id" colspan="2" widget="selection"/>
                 </xpath>
                 <xpath expr="/form/notebook/page/field[@name='move_prod_id']" position="after">
                     <separator string="Notes" colspan="4"/>

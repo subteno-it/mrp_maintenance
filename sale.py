@@ -50,6 +50,8 @@ class sale_order(osv.osv):
                         raise osv.except_osv(_('Product missing!'), _('Please fill product for : %s') % line.name)
                     if not line.prodlot_id:
                         raise osv.except_osv(_('Production Lot missing!'), _('Please fill production lot for product : %s') % line.product_id.name)
+                    if not line.maintenance_type_id:
+                        raise osv.except_osv(_('Maintenance Type missing!'), _('Please fill maintenance type for product : %s') % line.product_id.name)
                     bom_ids = bom_obj.search(cr, uid, [('product_id', '=', line.product_id.id)], limit=1, context=context)
                     if not bom_ids:
                         bom_obj.create(cr, uid, {
@@ -114,7 +116,8 @@ class sale_order_line(osv.osv):
     _inherit = 'sale.order.line'
 
     _columns = {
-        'prodlot_id': fields.many2one('stock.production.lot', 'Production Lot', help='Production lot is used to put a serial number on the production'),
+        'prodlot_id': fields.many2one('stock.production.lot', 'Production Lot', readonly=True, states={'draft': [('readonly', False)]}, help='Production lot is used to put a serial number on the production'),
+        'maintenance_type_id': fields.many2one('mrp.maintenance.type', 'Maintenance Type', readonly=True, states={'draft': [('readonly', False)]}, help='Type of maintenance for know if this maintenance will be invoice or not'),
     }
 
 sale_order_line()

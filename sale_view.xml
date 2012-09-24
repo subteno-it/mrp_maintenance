@@ -35,7 +35,8 @@
                     <field name="is_maintenance" invisible="1"/>
                 </xpath>
                 <xpath expr="/form/notebook/page/field/form/notebook/page/group/field[@name='notes']" position="after">
-                    <field name="prodlot_id" colspan="5"/>
+                    <field name="prodlot_id" colspan="2"/>
+                    <field name="maintenance_type_id" colspan="2" widget="selection"/>
                 </xpath>
                 <xpath expr="/form/notebook" position="inside">
                     <page string="Work Orders" attrs="{'invisible': [('is_maintenance', '=', False)]}">

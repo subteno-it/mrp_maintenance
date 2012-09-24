@@ -40,6 +40,7 @@ class mrp_production(osv.osv):
             ("2binvoiced", "To Be Invoiced"),
             ("none", "Not Applicable")], "Invoice Control",
             select=True, required=True, readonly=True, states={'draft': [('readonly', False)]}),
+        'maintenance_type_id': fields.related('sale_line_id', 'maintenance_type_id', type='many2one', relation='mrp.maintenance.type', string='Maintenance Type', readonly=True, store=True, help='Type of maintenance for know if this maintenance will be invoice or not'),
     }
 
     _defaults = {
@@ -54,7 +55,8 @@ class mrp_production(osv.osv):
         workcenter_line_obj = self.pool.get('mrp.production.workcenter.line')
         for production in self.browse(cr, uid, ids, context=context):
             if production.sale_id and production.sale_id.is_maintenance:
-                production.write({'invoice_state': '2binvoiced'})
+                if production.maintenance_type_id.is_invoice:
+                    production.write({'invoice_state': '2binvoiced'})
                 if not production.move_created_ids:
                     self._make_production_produce_line(cr, uid, production, context=context)
                     workcenter_line_obj.write(cr, uid, [line.id for line in production.sale_id.workcenter_line_ids], {'production_id': production.id}, context=context)
