@@ -41,6 +41,7 @@ class mrp_production(osv.osv):
             ("none", "Not Applicable")], "Invoice Control",
             select=True, required=True, readonly=True, states={'draft': [('readonly', False)]}),
         'maintenance_type_id': fields.related('sale_line_id', 'maintenance_type_id', type='many2one', relation='mrp.maintenance.type', string='Maintenance Type', readonly=True, store=True, help='Type of maintenance for know if this maintenance will be invoice or not'),
+        'notes': fields.text('Notes'),
     }
 
     _defaults = {
