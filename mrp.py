@@ -63,6 +63,13 @@ class mrp_production(osv.osv):
                     workcenter_line_obj.write(cr, uid, [line.id for line in production.sale_id.workcenter_line_ids], {'production_id': production.id}, context=context)
         return True
 
+    def _make_production_produce_line(self, cr, uid, production, context=None):
+        move_id = super(mrp_production, self)._make_production_produce_line(cr, uid, production, context=context)
+        if move_id and production.sale_id and production.sale_id.is_maintenance:
+            self.pool.get('stock.move').write(cr, uid, [move_id], {
+                'prodlot_id': production.move_prod_id.prodlot_id and production.move_prod_id.prodlot_id.id or False
+            }, context=context)
+
 
 mrp_production()
 

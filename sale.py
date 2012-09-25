@@ -99,6 +99,9 @@ class sale_order(osv.osv):
            and line.product_id.property_stock_production \
            and line.product_id.property_stock_production.id:
             results['location_dest_id'] = line.product_id.property_stock_production.id
+        elif order.is_maintenance:
+            if line.prodlot_id:
+                results['prodlot_id'] = line.prodlot_id.id
         return results
 
     def ship_recreate(self, cr, uid, order, line, move_id, proc_id):
@@ -121,5 +124,6 @@ class sale_order_line(osv.osv):
     }
 
 sale_order_line()
+
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
