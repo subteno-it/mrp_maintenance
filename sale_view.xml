@@ -65,7 +65,7 @@
             />
 
         <record id="sale.action_order_form" model="ir.actions.act_window">
-            <field name="domain">[('is_maintenance', '=', False)]</field>
+            <field name="domain">[('is_maintenance', '=', False), ('production_id', '=', False)]</field>
         </record>
         <record id="action_sale_order_form" model="ir.actions.act_window">
             <field name="name">Sales Orders</field>
