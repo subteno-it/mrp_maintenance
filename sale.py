@@ -120,7 +120,7 @@ class sale_order_line(osv.osv):
 
     _columns = {
         'prodlot_id': fields.many2one('stock.production.lot', 'Production Lot', readonly=True, states={'draft': [('readonly', False)]}, help='Production lot is used to put a serial number on the production'),
-        'maintenance_type_id': fields.many2one('mrp.maintenance.type', 'Maintenance Type', readonly=True, states={'draft': [('readonly', False)]}, help='Type of maintenance for know if this maintenance will be invoice or not'),
+        'maintenance_type_id': fields.many2one('mrp.maintenance.type', 'Maintenance Type', domain=[('type', 'in', ['all', 'mrp'])], readonly=True, states={'draft': [('readonly', False)]}, help='Type of maintenance for know if this maintenance will be invoice or not'),
     }
 
 sale_order_line()

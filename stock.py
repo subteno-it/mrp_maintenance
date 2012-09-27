@@ -22,37 +22,19 @@
 #
 ##############################################################################
 
-{
-    'name': 'MRP Maintenance',
-    'version': '1.0',
-    "category" : "Manufacturing",
-    'description': """Manage maintenance in production order""",
-    'author': 'SYLEAM',
-    'website': 'http://www.syleam.fr/',
-    'depends': [
-        'base',
-        'mrp',
-        'sale',
-        'stock',
-    ],
-    'init_xml': [],
-    'images': [],
-    'update_xml': [
-        'sale_view.xml',
-        'procurement_workflow.xml',
-        'mrp_view.xml',
-        'mrp_maintenance_view.xml',
-        'mrp_workflow.xml',
-        'stock_view.xml',
-        'wizard/mrp_invoice_view.xml',
-        'security/ir.model.access.csv',
-    ],
-    'demo_xml': [],
-    'test': [],
-    'installable': True,
-    'application': True,
-    'active': False,
-    'license': 'AGPL-3',
-}
+
+from osv import osv
+from osv import fields
+
+
+class stock_production_lot(osv.osv):
+    _inherit = 'stock.production.lot'
+
+    _columns = {
+        'maintenance_type_id': fields.many2one('mrp.maintenance.type', 'Maintenance Type', domain=[('type', 'in', ['all', 'lot'])], help='Type of maintenance for know if this maintenance will be invoice or not'),
+    }
+
+stock_production_lot()
+
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

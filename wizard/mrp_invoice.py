@@ -84,7 +84,7 @@ class mrp_maintenance_invoice(osv.osv_memory):
         if context is None:
             context = {}
         data_pool = self.pool.get('ir.model.data')
-        invoice_ids = self.create_invoice(cr, uid, ids, context=context)
+        invoice_ids = self.create_invoice(cr, uid, ids, context=context).values()
         inv_type = context.get('inv_type', False)
         action_model = False
         action = {}
@@ -119,7 +119,7 @@ class mrp_maintenance_invoice(osv.osv_memory):
         data_obj = self.read(cr, uid, ids, ['journal_id', 'invoice_date'])
         context['date_inv'] = data_obj[0]['invoice_date']
         active_ids = context.get('active_ids', [])
-        res = []
+        res = {}
         for production in mrp_obj.browse(cr, uid, active_ids, context=context):
             picking_ids = []
             sale_ids = sale_obj.search(cr, uid, [('production_id', '=', production.id)], context=context)
@@ -145,7 +145,7 @@ class mrp_maintenance_invoice(osv.osv_memory):
                 invoice_id = invoice_ids.values()[0]
                 # Get invoice lines created for link in maintenance order
                 invoice_line_ids = [line.id for line in account_invoice_obj.browse(cr, uid, invoice_id, context=context).invoice_line]
-                res.append(invoice_id)
+                res[production.id] = invoice_id
                 workcenter_lines = {}
                 # Group by workcenter_id
                 for line in production.workcenter_lines:

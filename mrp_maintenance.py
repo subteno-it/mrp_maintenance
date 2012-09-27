@@ -35,6 +35,7 @@ class mrp_maintenance_type(osv.osv):
         'name': fields.char('Name', size=64, required=True, help='Name of type'),
         'code': fields.char('Code', size=64, help='Code of type'),
         'is_invoice': fields.boolean('Invoice ?', help='If set, the maintenance can be invoice'),
+        'type': fields.selection([('all', 'All'), ('mrp', 'Maintenance Order'), ('lot', 'Production Lot')], 'Type', help='Maintenance Order : Use for Production order\nProduction Lot: use for Production Lot\nAll: use for twice'),
     }
 
     _defaults = {
