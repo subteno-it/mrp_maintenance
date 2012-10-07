@@ -32,9 +32,26 @@ class stock_production_lot(osv.osv):
 
     _columns = {
         'maintenance_type_id': fields.many2one('mrp.maintenance.type', 'Maintenance Type', domain=[('type', 'in', ['all', 'lot'])], help='Type of maintenance for know if this maintenance will be invoice or not'),
+        'partner_id': fields.many2one('res.partner', 'Partner', help='Product form this partner'),
     }
 
 stock_production_lot()
+
+
+class stock_move(osv.osv):
+    _inherit = 'stock.move'
+
+    def _create_product_valuation_moves(self, cr, uid, move, context=None):
+        """
+        Fill partner_id in stock.production.lot
+        """
+        if move.prodlot_id and not move.prodlot_id.partner_id \
+           and move.picking_id and move.picking_id.type == 'out' \
+           and move.sale_line_id:
+            self.pool.get('stock.production.lot').write(cr, uid, [move.prodlot_id.id], {'partner_id': move.sale_line_id.order_id.partner_id.id}, context=context)
+        return super(stock_move, self)._create_product_valuation_moves(cr, uid, move, context=context)
+
+stock_move()
 
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
